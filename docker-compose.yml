@@ -1,0 +1,42 @@
+version: '3'
+services:
+  opensearch:
+    image: docker.io/opensearchproject/opensearch:3.7.0
+    container_name: opensearch-lab
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Dem0.Trace.2026
+      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports: ["9201:9200"]
+    ulimits: { memlock: { soft: -1, hard: -1 } }
+    volumes: [opensearch-data-lab:/usr/share/opensearch/data]
+  dashboards:
+    image: docker.io/opensearchproject/opensearch-dashboards:3.7.0
+    container_name: dashboards-lab
+    ports: ["5602:5601"]
+    environment: ['OPENSEARCH_HOSTS=["https://opensearch:9200"]']
+    depends_on: [opensearch]
+  data-prepper:
+    image: docker.io/opensearchproject/data-prepper:2.16.0
+    container_name: data-prepper-lab
+    # Cap the JVM explicitly — the image otherwise sizes its heap from host
+    # RAM, which on a small machine (e.g. a 7 GB CI runner) starves the rest
+    # of the stack and gets a pipeline component OOM-killed mid-run. This
+    # workload peaks at ~60 spans/s; 1 GB is generous.
+    environment:
+      - JDK_JAVA_OPTIONS=-Xms512m -Xmx1g
+      - JAVA_OPTS=-Xms512m -Xmx1g
+    ports: ["21890:21890"]
+    volumes:
+      - ./data-prepper-pipelines.yaml:/usr/share/data-prepper/pipelines/pipelines.yaml
+      - ./data-prepper-config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
+    depends_on: [opensearch]
+  otel-collector:
+    image: docker.io/otel/opentelemetry-collector-contrib:0.158.0
+    container_name: otel-collector-lab
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports: ["4317:4317","4318:4318"]
+    volumes: [./otel-collector-config.yaml:/etc/otel-collector-config.yaml]
+    depends_on: [data-prepper]
+volumes:
+  opensearch-data-lab:

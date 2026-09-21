@@ -1,0 +1,85 @@
+# Reproducibility proof: bring up the real pipeline, generate the seeded
+# dataset from scratch, and assert every published number (make check).
+# If this is green, "every number reproduces on any machine" is not a claim —
+# it is a build status.
+name: reproduce
+
+on:
+  push:
+    branches: [main]
+    # A full run rebuilds the pipeline and regenerates 21,104 spans — ~9 minutes.
+    # Nothing below can change a single number, so a commit touching only these
+    # paths skips CI. A commit touching code as well still runs.
+    paths-ignore:
+      - '**.md'
+      - '**.pdf'
+      - 'assets/**'
+      - 'LICENSE'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUNBUFFERED: "1"   # truthful log timestamps — block-buffered output
+                              # made three failure diagnoses harder than needed
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # OpenSearch refuses to start below this mmap limit
+      - name: Raise vm.max_map_count for OpenSearch
+        run: sudo sysctl -w vm.max_map_count=262144
+
+      - name: Ensure nc is present (Makefile readiness probes)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq netcat-openbsd
+
+      - name: Install pinned Python deps
+        run: pip install -r requirements.txt
+
+      # Dashboards is a UI — generation and validation never touch it, and on
+      # a 7 GB runner its ~0.7 GB is better spent keeping the pipeline alive.
+      - name: Start the pipeline (OpenSearch + Data Prepper + Collector, no Dashboards)
+        run: |
+          docker compose up -d opensearch data-prepper otel-collector
+          make wait
+
+      # The Collector's port opens well before its gRPC pipe to Data Prepper is
+      # usable; generating too early silently drops spans (no error anywhere).
+      # Same 45s grace `make reset` uses.
+      - name: Grace for the Collector→Data Prepper gRPC pipe
+        run: sleep 45
+
+      - name: Generate the seeded dataset and assert every number
+        id: first
+        continue-on-error: true
+        run: make generate && make check
+
+      # One retry from a clean slate — mirrors the documented recovery path
+      # (`make reset && make generate`) for the two known silent-loss traps.
+      - name: Retry once from clean state
+        if: steps.first.outcome == 'failure'
+        run: make reset && make generate && make check
+
+      # Forensics on failure: which container died, who the OOM killer took,
+      # and what the pipeline logged. Turns the next failure from a guess
+      # into a diagnosis.
+      - name: Failure forensics
+        if: failure()
+        run: |
+          echo "=== containers ==="; docker ps -a
+          echo "=== oom / kills ==="; sudo dmesg | grep -iE "oom|killed process" | tail -20 || true
+          echo "=== memory ==="; free -m
+          for c in data-prepper-lab otel-collector-lab opensearch-lab; do
+            echo "=== $c: drop/fail/error counts over FULL log ==="
+            docker logs "$c" 2>&1 | grep -icE "dropping data|exporting failed|error|reject|too many requests|429" || true
+            echo "=== $c: sample drop/fail lines ==="
+            docker logs "$c" 2>&1 | grep -iE "dropping data|exporting failed|reject|too many requests|429" | head -10 || true
+            echo "=== $c: last 15 lines ==="
+            docker logs --tail 15 "$c" 2>&1 || true
+          done

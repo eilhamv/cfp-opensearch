@@ -1,0 +1,15 @@
+{
+  "type": "monitor", "name": "agent-evidence-collapse", "enabled": true,
+  "schedule": { "period": { "interval": 30, "unit": "MINUTES" } },
+  "inputs": [{ "search": {
+    "indices": ["otel-v1-apm-span-*"],
+    "query": { "size": 0, "query": { "bool": { "filter": [
+      { "term": { "name": "context_usage_check" } },
+      { "term": { "span.attributes.context@overflow_detected": true } },
+      { "range": { "span.attributes.context@evidence_overlap_ratio": { "lt": 0.15 } } },
+      { "range": { "startTime": { "gte": "now-30m" } } }
+    ]}}}}}],
+  "triggers": [{ "name": "evidence-not-reaching-answer", "severity": "2",
+    "condition": { "script": { "source": "ctx.results[0].hits.total.value > 0", "lang": "painless" } },
+    "actions": [] }]
+}

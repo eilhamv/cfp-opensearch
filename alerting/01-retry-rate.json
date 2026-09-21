@@ -1,0 +1,14 @@
+{
+  "type": "monitor", "name": "agent-tool-retry-rate", "enabled": true,
+  "schedule": { "period": { "interval": 15, "unit": "MINUTES" } },
+  "inputs": [{ "search": {
+    "indices": ["otel-v1-apm-span-*"],
+    "query": { "size": 0, "query": { "bool": { "filter": [
+      { "term": { "name": "tool.attempt" } },
+      { "range": { "span.attributes.tool@retry@attempt": { "gt": 1 } } },
+      { "range": { "startTime": { "gte": "now-15m" } } }
+    ]}}}}}],
+  "triggers": [{ "name": "retries-detected", "severity": "1",
+    "condition": { "script": { "source": "ctx.results[0].hits.total.value > 0", "lang": "painless" } },
+    "actions": [] }]
+}

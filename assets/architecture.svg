@@ -1,0 +1,117 @@
+<svg width="1000" height="720" viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" font-family="Menlo, Consolas, monospace">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#5f6b7a"/>
+    </marker>
+    <marker id="arrowO" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#d95f20"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="720" fill="#fafbfc"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#1a2733">
+    Agent Observability Lab — OpenSearchCon NA 2026</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#d95f20" font-weight="bold">
+    THE WORKLOAD IS SIMULATED. THE PIPELINE IS REAL.</text>
+
+  <!-- ══════════ BAND A — the multi-agent platform + the real pipeline ══════════ -->
+  <rect x="28" y="80" width="344" height="240" rx="8" fill="#fdf3ec" stroke="#d95f20" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <text x="200" y="104" text-anchor="middle" font-size="10" fill="#d95f20" font-weight="bold">SIMULATED (seed 42 · 500 incidents × 2 releases)</text>
+
+  <rect x="44" y="116" width="312" height="44" rx="5" fill="#fff" stroke="#c95539" stroke-opacity="0.35"/>
+  <text x="200" y="136" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a2733">remediation-orchestrator</text>
+  <text x="200" y="152" text-anchor="middle" font-size="9" fill="#5f6b7a">plans · delegates · rolls up the run</text>
+
+  <rect x="44" y="170" width="100" height="56" rx="5" fill="#fff" stroke="#b8c4ce"/>
+  <text x="94" y="190" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1a2733">diagnosis</text>
+  <text x="94" y="205" text-anchor="middle" font-size="8.5" fill="#5f6b7a">evidence ·</text>
+  <text x="94" y="217" text-anchor="middle" font-size="8.5" fill="#5f6b7a">retrieval</text>
+
+  <rect x="150" y="170" width="100" height="56" rx="5" fill="#fff" stroke="#d95f20" stroke-width="1.5"/>
+  <text x="200" y="190" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#d95f20">remediation</text>
+  <text x="200" y="205" text-anchor="middle" font-size="8.5" fill="#5f6b7a">EXECUTES the</text>
+  <text x="200" y="217" text-anchor="middle" font-size="8.5" fill="#5f6b7a">runbook action</text>
+
+  <rect x="256" y="170" width="100" height="56" rx="5" fill="#fff" stroke="#b8c4ce"/>
+  <text x="306" y="190" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1a2733">comms</text>
+  <text x="306" y="205" text-anchor="middle" font-size="8.5" fill="#5f6b7a">ticket ·</text>
+  <text x="306" y="217" text-anchor="middle" font-size="8.5" fill="#5f6b7a">bridge</text>
+
+  <text x="200" y="248" text-anchor="middle" font-size="9" fill="#5f6b7a">MCP tools · logs · jira · runbook · rollback · slack</text>
+  <text x="200" y="272" text-anchor="middle" font-size="10" font-weight="bold" fill="#1a2733">one trace per incident · 21 spans</text>
+  <text x="200" y="288" text-anchor="middle" font-size="9" fill="#5f6b7a">4 OTel services inside a single trace</text>
+  <text x="200" y="308" text-anchor="middle" font-size="8.5" fill="#8a949e">agent.synthetic=true on every root span</text>
+
+  <rect x="392" y="80" width="580" height="240" rx="8" fill="#eef4f0" stroke="#1a7a50" stroke-width="1.5"/>
+  <text x="682" y="104" text-anchor="middle" font-size="10" fill="#1a7a50" font-weight="bold">REAL PIPELINE (unchanged from production use)</text>
+
+  <rect x="408" y="120" width="128" height="58" rx="5" fill="#fff" stroke="#b8c4ce"/>
+  <text x="472" y="143" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a2733">OTel SDK</text>
+  <text x="472" y="161" text-anchor="middle" font-size="8.5" fill="#5f6b7a">gen_ai.* conventions</text>
+
+  <rect x="550" y="120" width="128" height="58" rx="5" fill="#fff" stroke="#b8c4ce"/>
+  <text x="614" y="143" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a2733">OTel Collector</text>
+  <text x="614" y="161" text-anchor="middle" font-size="8.5" fill="#5f6b7a">OTLP gRPC :4317</text>
+
+  <rect x="692" y="120" width="128" height="58" rx="5" fill="#fff" stroke="#b8c4ce"/>
+  <text x="756" y="141" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a2733">Data Prepper 2.16</text>
+  <text x="756" y="157" text-anchor="middle" font-size="8" fill="#5f6b7a">otel_trace_source</text>
+  <text x="756" y="169" text-anchor="middle" font-size="8" fill="#5f6b7a">:21890</text>
+
+  <rect x="834" y="120" width="128" height="58" rx="5" fill="#fff" stroke="#1a7a50" stroke-width="1.5"/>
+  <text x="898" y="143" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a7a50">OpenSearch</text>
+  <text x="898" y="161" text-anchor="middle" font-size="8.5" fill="#5f6b7a">3.7 · stock image</text>
+
+  <line x1="372" y1="149" x2="404" y2="149" stroke="#5f6b7a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="536" y1="149" x2="548" y2="149" stroke="#5f6b7a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="678" y1="149" x2="690" y2="149" stroke="#5f6b7a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="820" y1="149" x2="832" y2="149" stroke="#5f6b7a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <text x="682" y="212" text-anchor="middle" font-size="9.5" fill="#5f6b7a">Data Prepper: otel_trace_source → otel_traces → sink</text>
+  <text x="682" y="230" text-anchor="middle" font-size="9.5" fill="#5f6b7a">index_type: trace-analytics-raw</text>
+  <text x="682" y="258" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a2733">otel-v1-apm-span-*</text>
+  <text x="682" y="278" text-anchor="middle" font-size="9" fill="#8a949e">attribute foo.bar → field span.attributes.foo@bar</text>
+  <text x="682" y="304" text-anchor="middle" font-size="9" fill="#1a7a50">no code changes · no special build · stock OpenSearch</text>
+
+  <!-- ══════════ BAND B — one cluster, two datasets, the join ══════════ -->
+  <rect x="28" y="340" width="944" height="130" rx="8" fill="#f5f8fa" stroke="#1a7a50" stroke-width="1.5"/>
+  <text x="500" y="363" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1a2733">ONE OPENSEARCH CLUSTER — the agent's telemetry beside the platform's own</text>
+
+  <rect x="60" y="374" width="400" height="62" rx="5" fill="#eef4f0" stroke="#1a7a50"/>
+  <text x="260" y="396" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a2733">otel-v1-apm-span-*</text>
+  <text x="260" y="412" text-anchor="middle" font-size="9" fill="#5f6b7a">what the AGENT did — 21,104 spans · 4 services</text>
+  <text x="260" y="427" text-anchor="middle" font-size="8.5" fill="#8a949e">1,000 incident traces (500 × 2 releases)</text>
+
+  <rect x="540" y="374" width="400" height="62" rx="5" fill="#fdf3ec" stroke="#d95f20"/>
+  <text x="740" y="396" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1a2733">platform-logs</text>
+  <text x="740" y="412" text-anchor="middle" font-size="9" fill="#5f6b7a">whether the PLATFORM recovered — 10,624 events</text>
+  <text x="740" y="427" text-anchor="middle" font-size="8.5" fill="#8a949e">entitlement-api error stream the agent was reading</text>
+
+  <line x1="464" y1="405" x2="490" y2="405" stroke="#d95f20" stroke-width="1.5" marker-end="url(#arrowO)"/>
+  <line x1="536" y1="405" x2="510" y2="405" stroke="#d95f20" stroke-width="1.5" marker-end="url(#arrowO)"/>
+  <text x="500" y="409" text-anchor="middle" font-size="9" font-weight="bold" fill="#d95f20">JOIN</text>
+  <text x="500" y="458" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#d95f20">the join a separate LLM-observability tool cannot make — 06_remediation_effectiveness.ppl</text>
+
+  <line x1="500" y1="470" x2="500" y2="486" stroke="#5f6b7a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ══════════ BAND C — how you consume it ══════════ -->
+  <rect x="28" y="490" width="944" height="92" rx="8" fill="#fff" stroke="#b8c4ce"/>
+  <text x="500" y="512" text-anchor="middle" font-size="10" font-weight="bold" fill="#5f6b7a">OPENSEARCH DASHBOARDS · http://localhost:5602</text>
+
+  <rect x="60" y="522" width="430" height="48" rx="5" fill="#eef4f0" stroke="#1a7a50"/>
+  <text x="275" y="542" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a2733">Trace Analytics</text>
+  <text x="275" y="558" text-anchor="middle" font-size="9" fill="#5f6b7a">span waterfall · shows you the ATTEMPTS in ONE trace</text>
+
+  <rect x="510" y="522" width="430" height="48" rx="5" fill="#fdf3ec" stroke="#d95f20" stroke-width="1.5"/>
+  <text x="725" y="542" text-anchor="middle" font-size="11" font-weight="bold" fill="#d95f20">Query Workbench · PPL</text>
+  <text x="725" y="558" text-anchor="middle" font-size="9" fill="#5f6b7a">the FLEET + the correlation  ← this talk</text>
+
+  <!-- ══════════ BAND D — what the queries surface ══════════ -->
+  <text x="40" y="612" font-size="10.5" font-weight="bold" fill="#1a2733">What the PPL queries surface across the 500 incidents in release 2026.09.1:</text>
+  <text x="40" y="634" font-size="10.5" fill="#5f6b7a">1 · 104 silent retry storms (20.8%) — all on the rollback tool, every log line says success</text>
+  <text x="40" y="652" font-size="10.5" fill="#5f6b7a">2 · p95 474 ms at the 100+ document boundary — hidden by the 184 ms average</text>
+  <text x="40" y="670" font-size="10.5" fill="#5f6b7a">3 · evidence overlap 0.250 → 0.062 (4×) at overflow — 10% of runs, 26% of spend, 3× per-run cost</text>
+  <text x="40" y="688" font-size="10.5" fill="#5f6b7a">4 · 104 incidents never recovered — exactly the 104 that retried (agent traces + platform logs)</text>
+  <text x="40" y="706" font-size="10.5" fill="#1a7a50" font-weight="bold">5 · three fixes shipped, same 500 incidents replayed → 104 / 95 / 51 becomes 0 / 0 / 0</text>
+</svg>

@@ -1,0 +1,14 @@
+{
+  "type": "monitor", "name": "agent-remediation-ineffective", "enabled": true,
+  "schedule": { "period": { "interval": 15, "unit": "MINUTES" } },
+  "inputs": [{ "search": {
+    "indices": ["platform-logs"],
+    "query": { "size": 0, "query": { "bool": { "filter": [
+      { "term": { "level": "ERROR" } },
+      { "term": { "phase": "post_remediation" } },
+      { "range": { "@timestamp": { "gte": "now-15m" } } }
+    ]}}}}}],
+  "triggers": [{ "name": "platform-did-not-recover", "severity": "1",
+    "condition": { "script": { "source": "ctx.results[0].hits.total.value > 5", "lang": "painless" } },
+    "actions": [] }]
+}

@@ -1,0 +1,19 @@
+/* THE QUERY AN AGENT-OBSERVABILITY TOOL CANNOT RUN.
+
+   The agent reported success on every incident. Did the PLATFORM recover?
+   This reads the operator's own entitlement-api error stream — the same
+   index the diagnosis agent was reading — and finds the incidents where
+   errors kept firing AFTER the agent executed its rollback.
+
+   Expected (release 2026.09.1): 104 incidents never settled — and every one
+   of them is a rollback that silently ran twice (01_retry_storm.ppl).
+   In 2026.09.2, with the idempotency key: 0.
+
+   Silent retry -> double-executed rollback -> platform never recovered ->
+   agent reported success anyway. That chain is only visible because the
+   agent's traces and the platform's logs are in the same cluster.          */
+source = platform-logs
+| where level = 'ERROR' and phase = 'post_remediation'
+| where release = '2026.09.1'
+| stats count() as errors_after_remediation by incident_id
+| sort - errors_after_remediation

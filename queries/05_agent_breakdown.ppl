@@ -1,0 +1,18 @@
+/* Which agent is the bottleneck? Duration by sub-agent, fleet-wide.
+   Only possible because each specialist is its own OTel service inside
+   one trace. serviceName is a top-level span field — no attributes needed.
+
+   Expected (1,000 runs per service, both releases):
+     remediation-orchestrator  avg ~336 ms   (end to end)
+     diagnosis-agent           avg ~238 ms   <- ~71% of time-to-remediation
+     remediation-agent         avg  ~52 ms
+     comms-agent               avg  ~40 ms
+   WALL-CLOCK, like 02 — claim the ~71% share, not the millisecond. */
+source = otel-v1-apm-span-*
+| where name like 'agent.run%' or name = 'incident.remediate'
+| eval duration_ms = durationInNanos / 1000000
+| stats count() as runs,
+        avg(duration_ms) as avg_ms,
+        percentile(duration_ms, 95) as p95_ms
+  by serviceName
+| sort - avg_ms

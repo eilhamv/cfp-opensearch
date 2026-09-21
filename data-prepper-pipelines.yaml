@@ -1,0 +1,13 @@
+agent-trace-pipeline:
+  source:
+    otel_trace_source:
+      ssl: false
+  processor:
+    - otel_traces: {}
+  sink:
+    - opensearch:
+        hosts: ["https://opensearch:9200"]
+        username: "admin"
+        password: "Dem0.Trace.2026"
+        insecure: true
+        index_type: trace-analytics-raw

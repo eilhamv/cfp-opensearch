@@ -1,0 +1,15 @@
+/* Scenario 3 — context underuse at the boundary.
+   context_usage_check is a CUSTOM span (not in OTel GenAI conventions);
+   the pattern — diagnostics in spans, so they are queryable — is the point.
+   Expected: overflow=true → 51 checks, avg_overlap 0.062, avg_tokens 798
+             overflow=false → 949 checks, avg_overlap 0.250, avg_tokens 78
+             (the 949 spans both releases; all 51 overflows are 2026.09.1)
+   A 4.0× overlap collapse exactly at the overflow boundary.
+   Covers both releases; every overflow=true check is from 2026.09.1 —
+   the dedupe fix in 2026.09.2 removes context overflow entirely. */
+source = otel-v1-apm-span-*
+| where name = 'context_usage_check'
+| stats avg(`span.attributes.context@evidence_overlap_ratio`) as avg_overlap,
+        avg(`span.attributes.context@final_context_tokens`) as avg_tokens,
+        count() as checks
+  by `span.attributes.context@overflow_detected`

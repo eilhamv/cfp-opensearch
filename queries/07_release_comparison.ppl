@@ -1,0 +1,20 @@
+/* Did the fixes work? Same 500 incidents, same seed, two releases.
+
+   2026.09.1 shipped the three defects. 2026.09.2 added an idempotency key on
+   the rollback client, capped retrieval at the observed boundary, and deduped
+   before context assembly.
+
+   Expected: retry_affected 104 -> 0 · heavy_retrieval 95 -> 0 ·
+             evidence_lost 51 -> 0                                          */
+source = otel-v1-apm-span-*
+| where name = 'incident.remediate'
+| eval release = `span.attributes.agent@release`
+| eval retried = if(`span.attributes.agent@tool_retries` > 0, 1, 0)
+| eval heavy   = if(`span.attributes.agent@total_docs_retrieved` > 100, 1, 0)
+| eval lost    = if(`span.attributes.agent@context_overlap_ratio` < 0.15, 1, 0)
+| stats count() as incidents,
+        sum(retried) as retry_affected,
+        sum(heavy)   as heavy_retrieval,
+        sum(lost)    as evidence_lost
+  by release
+| sort release

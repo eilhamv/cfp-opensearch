@@ -1,0 +1,21 @@
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: "0.0.0.0:4317" }
+      http: { endpoint: "0.0.0.0:4318" }
+processors:
+  batch: { timeout: 5s, send_batch_size: 512 }
+exporters:
+  # retry_on_failure.max_elapsed_time: 0 = retry forever. The default gives up
+  # and SILENTLY DROPS after 5 minutes of backpressure — on a slow machine the
+  # tail of a generation run vanishes with no error anywhere (the exact failure
+  # mode this lab teaches you to catch). A bigger queue rides out the stall.
+  otlp/dataprepper:
+    endpoint: "data-prepper:21890"
+    tls: { insecure: true }
+    retry_on_failure: { enabled: true, max_elapsed_time: 0 }
+    sending_queue: { enabled: true, queue_size: 5000 }
+  debug: { verbosity: basic }
+service:
+  pipelines:
+    traces: { receivers: [otlp], processors: [batch], exporters: [otlp/dataprepper, debug] }

@@ -1,0 +1,24 @@
+/* TRIAGE — the first query an operator runs. "How much of the fleet is
+   unhealthy, and by which signal?" One pass over root spans only; no
+   child-span scan, no scenario labels (those are synthetic bookkeeping —
+   detection must come from signals a real system emits).
+
+   Expected: runs=500 · retry_affected=104 · heavy_retrieval=95 · evidence_lost=51
+
+   Scoped to release 2026.09.1 — the release under investigation. Drop that
+   filter and add `by release` to compare cohorts (07_release_comparison.ppl).
+
+   Each column maps to a deep-dive query:
+     retry_affected  -> 01_retry_storm.ppl
+     heavy_retrieval -> 02_latency_percentiles.ppl
+     evidence_lost   -> 03_evidence_loss.ppl                                  */
+source = otel-v1-apm-span-*
+| where name = 'incident.remediate'
+| where `span.attributes.agent@release` = '2026.09.1'
+| eval retried = if(`span.attributes.agent@tool_retries` > 0, 1, 0)
+| eval heavy   = if(`span.attributes.agent@total_docs_retrieved` > 100, 1, 0)
+| eval lost    = if(`span.attributes.agent@context_overlap_ratio` < 0.15, 1, 0)
+| stats count() as runs,
+        sum(retried) as retry_affected,
+        sum(heavy)   as heavy_retrieval,
+        sum(lost)    as evidence_lost

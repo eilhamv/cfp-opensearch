@@ -1,0 +1,26 @@
+/* THE JOIN, LITERALLY — identity match, not count correlation.
+
+   06_remediation_effectiveness.ppl shows 104 incidents still erroring after
+   the agent reported success. This query proves they are THE SAME incidents
+   whose rollback silently ran twice — by joining the agent's root spans to
+   the platform's own error stream on run_id = incident_id. One query, one
+   cluster: the sentence "joining agent traces to the platform's own logs"
+   executed as written. An agent-observability island cannot run this,
+   because it holds only the left side.
+
+   Expected: 104 rows · every row errors_after = 8 · every row had
+   tool_retries > 0 by construction of the left side.
+
+   PPL `join` ships in OpenSearch 3.x — verified working on this stack
+   (3.7.0, stock image, no settings changed).                              */
+source = otel-v1-apm-span-*
+| where name = 'incident.remediate' and `span.attributes.agent@release` = '2026.09.1'
+| where `span.attributes.agent@tool_retries` > 0
+| join ON `span.attributes.agent@run_id` = incident_id
+  [
+    source = platform-logs
+    | where level = 'ERROR' and phase = 'post_remediation'
+    | stats count() as errors_after by incident_id
+  ]
+| fields `span.attributes.agent@run_id`, errors_after
+| sort `span.attributes.agent@run_id`

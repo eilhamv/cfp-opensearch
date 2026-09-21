@@ -1,0 +1,16 @@
+/* Cost attribution by failure pattern, across the whole fleet.
+   failure_pattern is the run's failure classification carried on its spans.
+   Expected: context_underuse -> 51 runs, $0.145 total, $0.0028/run (3.0x the
+   rest); normal 250/$0.233; slow_retrieval 95/$0.088; retry_storm 104/$0.097.
+   Headline: the evidence-loss runs are ~10% of traffic but ~26% of spend. */
+source = otel-v1-apm-span-*
+| where name = 'llm.generate'
+| eval failure_pattern = `span.attributes.agent@scenario`
+| where `span.attributes.agent@release` = '2026.09.1'
+| stats sum(`span.attributes.llm@input_tokens`)  as total_in,
+        sum(`span.attributes.llm@output_tokens`) as total_out,
+        count() as runs
+  by failure_pattern
+| eval est_cost_usd = (total_in * 0.000003) + (total_out * 0.000015)
+| eval cost_per_run = est_cost_usd / runs
+| sort - cost_per_run

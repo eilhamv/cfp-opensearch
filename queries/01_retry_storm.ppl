@@ -1,0 +1,15 @@
+/* Scenario 1 — the silent retry storm.
+   Expected: exactly 104 rows (20.8% of 500 incidents), all rollback_mcp — the
+   tool that EXECUTES the remediation — each attempts=2, max_attempt=2.
+   A silent retry on an action tool is a double-execution question; these
+   attempt spans are the audit trail that answers it. All 104 are in release
+   2026.09.1 — the idempotency-key fix in 2026.09.2 removes them entirely.
+   Group by traceId + tool name ONLY — the per-attempt retry reason
+   stays on each span in the waterfall. */
+source = otel-v1-apm-span-*
+| where name = 'tool.attempt'
+| stats count() as attempts,
+        max(`span.attributes.tool@retry@attempt`) as max_attempt
+  by traceId, `span.attributes.tool@name`
+| where max_attempt > 1
+| sort - attempts

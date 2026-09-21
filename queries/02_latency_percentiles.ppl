@@ -1,0 +1,28 @@
+/* Scenario 2 — latency hiding in averages.
+   durationInNanos is the native top-level span field; no custom attribute.
+   These are WALL-CLOCK durations, so they move a few ms with machine speed —
+   unlike every other number in this lab, which is exact everywhere.
+   What is stable is the shape: four buckets, monotonically rising, and a
+   ~6.5x gap between the 100+ bucket p95 and the 0-10 bucket p95.
+
+   Observed on EC2 t4g.large (diagnosis-agent retrieval):
+     0-10    avg  54   p95  71
+     11-50   avg 113   p95 140
+     51-100  avg 212   p95 262
+     100+    avg 402   p95 474   <- the boundary (~6.7x the fast bucket)
+   All-bucket mean ~184ms — which is what hides it.
+
+   ROW ORDER: the sort below is on the bucket STRING, so results come back
+   lexicographically — 0-10, 100+, 11-50, 51-100 — and the 100+ row lands
+   SECOND, not last. The rise is in the numbers, not the row order. To read
+   it top-to-bottom instead, swap the last line for `| sort avg_ms`.
+   Covers both releases; the 100+ bucket exists only in 2026.09.1 because
+   the retrieval cap in 2026.09.2 keeps every incident at or below 100 docs. */
+source = otel-v1-apm-span-*
+| where name = 'retrieval.search'
+| eval duration_ms = durationInNanos / 1000000
+| stats avg(duration_ms) as avg_ms,
+        percentile(duration_ms, 95) as p95_ms,
+        percentile(duration_ms, 99) as p99_ms
+  by `span.attributes.retrieval@document_bucket`
+| sort `span.attributes.retrieval@document_bucket`

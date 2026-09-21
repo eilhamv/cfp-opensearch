@@ -1,0 +1,10 @@
+/* Preflight — confirm ingestion before going on stage.
+   Expected (21,104 spans = 500 incidents × 2 releases):
+   execute_tool 6000 · invoke_agent 4000 (1 root + 3 sub-agents × 1000) ·
+   chat 2000 · retrieval 1000 · one null row (8,104) for spans without the
+   attribute (tool.attempt 6,104 incl. the 104 retries, context.assemble
+   1,000, context_usage_check 1,000). */
+source = otel-v1-apm-span-*
+| stats count() as total_spans
+  by `span.attributes.gen_ai@operation@name`
+| sort - total_spans
